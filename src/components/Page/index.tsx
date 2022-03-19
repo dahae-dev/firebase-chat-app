@@ -14,8 +14,8 @@ const Root = styled.div<Pick<PageProps, 'backgroundColor'>>`
   max-width: 100%;
   min-width: 0;
   height: 100%;
-  min-height: 100%;
-  overflow: scroll;
+  display: flex;
+  flex-direction: column;
   ${({ backgroundColor, theme }) => (
     `background-color: ${backgroundColor ? theme.colors[backgroundColor] : 'inherit'};`
   )};

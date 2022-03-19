@@ -14,7 +14,9 @@ interface StackProps {
 
 // ====
 
-const Root = styled.div<StackProps>`
+const Root = styled.div<Omit<StackProps, 'wrap'> & {
+  $wrap: boolean
+}>`
   display: flex;
   ${({ valign }) => (valign && ({
     top: 'align-items: flex-start;',
@@ -27,16 +29,16 @@ const Root = styled.div<StackProps>`
     right: 'justify-content: flex-end;',
     center: 'justify-content: center;',
   }[halign]))}
-  ${({ wrap }) => (
-    wrap 
+  ${({ $wrap }) => (
+    $wrap 
       ? 'flex-wrap: wrap;'
       : 'flex-wrap: nowrap;'
   )}
   ${({ spacing }) => (spacing ? ml(-spacing) : '')}
-  ${({ spacing, wrap }) => ((spacing && wrap) ? mt(-spacing) : '')}
+  ${({ spacing, $wrap }) => ((spacing && $wrap) ? mt(-spacing) : '')}
   & > *:not(:first-child) {
     ${({ spacing }) => ml(spacing)}
-    ${({ spacing, wrap }) => wrap && mt(spacing)}
+    ${({ spacing, $wrap }) => $wrap && mt(spacing)}
   }
 `;
 
@@ -51,7 +53,7 @@ const Stack = ({
     spacing={spacing}
     valign={valign}
     halign={halign}
-    wrap={wrap}
+    $wrap={wrap}
   >
     {children}
   </Root>
