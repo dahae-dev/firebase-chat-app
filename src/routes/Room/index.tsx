@@ -20,7 +20,7 @@ import Topbar from 'components/Topbar';
 import { IMessage } from 'types';
 
 import { useRoomMutation } from './mutations';
-import { useRoom } from './queries';
+import { useRoomQuery } from './queries';
 
 interface IProcessedMessage extends Omit<IMessage, 'createdAt'> {
   createdAt: string;
@@ -83,13 +83,13 @@ const StyledButton = styled(Button)`
 
 const ScrollRefContainer = styled.div``;
 
-const ChatRoom = () => {
+const Room = () => {
   const params = useParams<{ room_id: string }>();
   const { room_id: roomId } = params;
   const {
     isLoading,
     data,
-  } = useRoom({ id: roomId });
+  } = useRoomQuery({ id: roomId });
   const { participants = [], messages = [] } = data || {};
   const title = participants.map(({ name }) => name).join(', ');
   const processedMessages = messages.map((message) => {
@@ -109,9 +109,21 @@ const ChatRoom = () => {
   }, {} as { [x: string]: IProcessedMessage[] });
   const dateGroups = Object.keys(groupedMessages);
 
+  const footerRef = useRef<HTMLDivElement>(null);
+  const [footerOffset, setFooterOffset] = useState(0);
+  useEffect(() => {
+    if (footerRef.current) {
+      setFooterOffset(footerRef.current.clientHeight);
+    }
+  }, [footerRef.current]);
+
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [formValue, setFormValue] = useState('');
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [scrollRef.current]);
+
   const { saveMessage } = useRoomMutation(roomId);
+  const [formValue, setFormValue] = useState('');
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     saveMessage({
@@ -123,18 +135,6 @@ const ChatRoom = () => {
     setFormValue('');
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [scrollRef.current]);
-
-  const footerRef = useRef<HTMLDivElement>(null);
-  const [footerOffset, setFooterOffset] = useState(0);
-  useEffect(() => {
-    if (footerRef.current) {
-      setFooterOffset(footerRef.current.clientHeight);
-    }
-  }, [footerRef.current]);
 
   return (
     <Page
@@ -244,4 +244,4 @@ const ChatRoom = () => {
   );
 };
 
-export default ChatRoom;
+export default Room;

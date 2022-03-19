@@ -12,7 +12,7 @@ import Text from 'components/Text';
 import Thumbnail from 'components/Thumbnail';
 import Topbar from 'components/Topbar';
 
-import { useRooms } from './queries';
+import { useRoomsQuery } from './queries';
 
 // ====
 
@@ -32,11 +32,11 @@ const Badge = styled.div`
   ${py(0.25)}
 `;
 
-const ChatRoomList = () => {
+const RoomList = () => {
   const {
     isLoading,
     data,
-  } = useRooms();
+  } = useRoomsQuery();
 
   const rooms = data.map(({
     id,
@@ -169,4 +169,4 @@ const ChatRoomList = () => {
 };
 
 
-export default ChatRoomList;
+export default RoomList;

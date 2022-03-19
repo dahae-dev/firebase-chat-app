@@ -1,14 +1,14 @@
 import { Switch, Route, Redirect } from 'react-router-dom';
 
-import ChatRoom from 'routes/ChatRoom';
-import ChatRoomList from 'routes/ChatRoomList';
+import Room from 'routes/Room';
+import RoomList from 'routes/RoomList';
 
 // ====
 
 const routes = () => (
   <Switch>
-    <Route path="/list" component={ChatRoomList} />
-    <Route path="/room/:room_id" component={ChatRoom} />
+    <Route path="/list" component={RoomList} />
+    <Route path="/room/:room_id" component={Room} />
     <Redirect from="/" to="/list" />
   </Switch>
 );

@@ -4,7 +4,7 @@ import { collection } from 'firebase/firestore';
 import { firestore } from 'services/firebase';
 import { IRoom } from 'types';
 
-export const useRooms = () => {
+export const useRoomsQuery = () => {
   const ref = collection(firestore, 'rooms');
   const query = useFirestoreQuery<IRoom>(['rooms'], ref, {
     subscribe: true,
