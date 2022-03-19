@@ -1,6 +1,12 @@
+import styled from 'styled-components';
+
+const Root = styled.div`
+  background-color: ${({ theme })=> theme.colors.paleLilac};
+`;
+
 const App = () => {
   return (
-    <div>Chat App</div>
+    <Root>Chat App</Root>
   );
 };
 
