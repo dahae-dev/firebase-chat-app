@@ -1,10 +1,12 @@
 import { format } from 'date-fns';
-import React from 'react';
+import { Timestamp } from 'firebase/firestore';
+import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { p, py, mx, Padding } from 'styled-components-spacing';
+import { p, py, px, mx, Padding } from 'styled-components-spacing';
 
 import Align from 'components/Align';
+import Button from 'components/Button';
 import Divider from 'components/Divider';
 import Icon from 'components/Icon';
 import Link from 'components/Link';
@@ -12,10 +14,12 @@ import Page from 'components/Page';
 import Spinner from 'components/Spinner';
 import Stack from 'components/Stack';
 import Text from 'components/Text';
+import TextField from 'components/TextField';
 import Thumbnail from 'components/Thumbnail';
 import Topbar from 'components/Topbar';
 import { IMessage } from 'types';
 
+import { useRoomMutation } from './mutations';
 import { useRoom } from './queries';
 
 interface IProcessedMessage extends Omit<IMessage, 'createdAt'> {
@@ -25,13 +29,15 @@ interface IProcessedMessage extends Omit<IMessage, 'createdAt'> {
 
 // ====
 
-const Body = styled.div`
+const Body = styled(Page.Body)<{ footerOffset?: number }>`
+  margin-bottom: ${({ footerOffset }) => `${footerOffset}px` || 0};
   ${p(1.5)}
 `;
 
 const MessageWrapper = styled.div<{ reverse: boolean }>`
   display: flex;
-  align-items: end;
+  align-items: flex-end;
+  -webkit-align-items: flex-end;
   ${({ reverse }) => reverse ? 'flex-direction: row-reverse;' : ''}
   ${py(0.5)}
   ${mx(-0.5)}
@@ -59,8 +65,26 @@ const MessageBox = styled.div<{ variation: 'purple' | 'white' }>`
   box-shadow: ${({ theme }) => theme.boxShadows[0]};
 `;
 
+const Footer = styled(Page.Footer)`
+  ${px(1.5)}
+  ${py(2)}
+`;
+
+const Form = styled.form``;
+
+const StyledButton = styled(Button)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: ${({ theme }) => theme.heights.inputField};
+  min-height: ${({ theme }) => theme.heights.inputField};
+  border: none;
+`;
+
+const ScrollRefContainer = styled.div``;
+
 const ChatRoom = () => {
-  const params = useParams<{ room_id: string; }>();
+  const params = useParams<{ room_id: string }>();
   const { room_id: roomId } = params;
   const {
     isLoading,
@@ -85,6 +109,33 @@ const ChatRoom = () => {
   }, {} as { [x: string]: IProcessedMessage[] });
   const dateGroups = Object.keys(groupedMessages);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [formValue, setFormValue] = useState('');
+  const { saveMessage } = useRoomMutation(roomId);
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    saveMessage({
+      type: 'text',
+      content: formValue,
+      createdAt: Timestamp.fromDate(new Date()),
+      status: 'sent',
+    });
+    setFormValue('');
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [scrollRef.current]);
+
+  const footerRef = useRef<HTMLDivElement>(null);
+  const [footerOffset, setFooterOffset] = useState(0);
+  useEffect(() => {
+    if (footerRef.current) {
+      setFooterOffset(footerRef.current.clientHeight);
+    }
+  }, [footerRef.current]);
+
   return (
     <Page
       backgroundColor="paleLilac"
@@ -107,7 +158,7 @@ const ChatRoom = () => {
           </Stack>
         </Topbar.Section>
       </Topbar>
-      <Body>
+      <Body footerOffset={footerOffset}>
         {
           isLoading
             ? (
@@ -168,7 +219,27 @@ const ChatRoom = () => {
               ))
             )
         }
+        <ScrollRefContainer
+          ref={scrollRef}
+        />
       </Body>
+      <Footer ref={footerRef}>
+        <Form onSubmit={handleSubmit}>
+          <Stack>
+            <TextField
+              value={formValue}
+              onChange={(e) => setFormValue(e.target.value)}
+              placeholder='메시지를 입력하세요..'
+            />
+            <StyledButton
+              type="submit"
+              rounded
+            >
+              <Icon.Mail size={24} />
+            </StyledButton>
+          </Stack>
+        </Form>
+      </Footer>
     </Page>
   );
 };

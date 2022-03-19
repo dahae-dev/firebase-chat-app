@@ -13,7 +13,9 @@ const Root = styled.div`
   right: 0;
   display: flex;
   align-items: center;
+  -webkit-align-items: center;
   height: ${({ theme })=> theme.heights.topbar};
+  min-height: ${({ theme })=> theme.heights.topbar};
   background-color: ${({ theme }) => theme.colors.purple};
   color: ${({ theme }) => theme.colors.white};
   z-index: ${({ theme }) => theme.zIndexes[1]};
@@ -25,7 +27,18 @@ const Section = styled.div <{
   align?: 'center' | 'left' | 'right'
 }>`
   display: flex;
-  justify-content: ${({ align }) => align || 'inherit'};
+  justify-content: ${({ align }) => (
+    (align === 'left' && 'flex-start')
+    || (align === 'right' && 'flex-end')
+    || (align === 'center' && 'center')
+    || 'inherit'
+  )};
+  -webkit-justify-content: ${({ align }) => (
+    (align === 'left' && 'flex-start')
+    || (align === 'right' && 'flex-end')
+    || (align === 'center' && 'center')
+    || 'inherit'
+  )};
   ${({ size }) => {
     if (size === 'min') {
       return `

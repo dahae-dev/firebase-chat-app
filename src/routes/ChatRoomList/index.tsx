@@ -16,13 +16,8 @@ import { useRooms } from './queries';
 
 // ====
 
-const Body = styled.div`
+const Body = styled(Page.Body)`
   ${p(1.5)}
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow: auto;
 `;
 
 const Badge = styled.div`

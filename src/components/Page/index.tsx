@@ -21,6 +21,22 @@ const Root = styled.div<Pick<PageProps, 'backgroundColor'>>`
   )};
 `;
 
+const Body = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: auto;
+`;
+
+const Footer = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: inherit;
+`;
+
 const Page = ({
   className,
   backgroundColor,
@@ -34,4 +50,11 @@ const Page = ({
   </Root>
 );
 
+Page.Body = Body;
+Page.Footer = Footer;
+
+export {
+  Body,
+  Footer,
+};
 export default Page;
