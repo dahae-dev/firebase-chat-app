@@ -24,8 +24,15 @@ export const useRoomMutation = (
     return mutation;
   };
 
+  const checkMessage = () => {
+    mutation.mutate({
+      unreadCount: 0,
+    });
+  };
+
   return {
     mutation,
     saveMessage,
+    checkMessage,
   };
 };

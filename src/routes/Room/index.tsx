@@ -118,7 +118,7 @@ const Room = () => {
     isLoading,
     data,
   } = useRoomQuery({ id: roomId });
-  const { participants = [], messages = [] } = data || {};
+  const { unreadCount, participants = [], messages = [] } = data || {};
   const title = participants.map(({ name }) => name).join(', ');
   const processedMessages = messages.map((message, idx) => {
     const createdAt = message.createdAt?.toDate();
@@ -158,7 +158,7 @@ const Room = () => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [scrollRef.current]);
 
-  const { saveMessage } = useRoomMutation(roomId);
+  const { saveMessage, checkMessage } = useRoomMutation(roomId);
   const [formValue, setFormValue] = useState('');
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -173,6 +173,12 @@ const Room = () => {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  useEffect(() => {
+    if (unreadCount && unreadCount > 0) {
+      checkMessage();
+    }
+  }, [unreadCount]);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadTask, setUploadTask] = useState<UploadTask | null>(null);
@@ -277,8 +283,17 @@ const Room = () => {
                         reverse={msg.status === 'sent' ? true : false}
                       >
                         {
-                          msg.type === 'text'
+                          msg.type === 'file'
                             ? (
+                              <ThumbnailWrapper>
+                                <Thumbnail
+                                  src={msg.content}
+                                  size="100%"
+                                />
+                              </ThumbnailWrapper>
+                              
+                            )
+                            : (
                               <MessageBox
                                 variation={msg.status === 'sent' ? 'purple' : 'white'}
                               >
@@ -290,14 +305,6 @@ const Room = () => {
                                   </Text>
                                 </Padding>
                               </MessageBox>
-                            )
-                            : (
-                              <ThumbnailWrapper>
-                                <Thumbnail
-                                  src={msg.content}
-                                  size="100%"
-                                />
-                              </ThumbnailWrapper>
                             )
                         }
                         <Text

@@ -38,7 +38,21 @@ const RoomList = () => {
     data,
   } = useRoomsQuery();
 
-  const rooms = data.map(({
+  const sortedRooms = data
+    .map((room) => {
+      const { messages = [] } = room;
+      const last = messages[messages.length - 1];
+      const lastCreatedDateObj = +(last?.createdAt?.toDate() || new Date()); 
+      return {
+        ...room,
+        lastCreatedDateObj,
+      };
+    })
+    .sort((prevRoom, currRoom) => (
+      currRoom.lastCreatedDateObj - prevRoom.lastCreatedDateObj
+    ));
+  
+  const rooms = sortedRooms.map(({
     id,
     unreadCount = 0,
     participants = [],
@@ -50,7 +64,7 @@ const RoomList = () => {
         : ''
     );
     const title = participants.map(({ name }) => name).join(', ');
-    const last = messages[messages.length - 1];
+    const last = messages[messages.length - 1] || {};
     const lastMessage = (
       last.type === 'file'
         ? '사진'
@@ -138,7 +152,10 @@ const RoomList = () => {
                           </Text>
                         </Margin>
                       </Partition.Main>
-                      <Partition.Side>
+                      <Partition.Side
+                        minWidth="40px"
+                        textAlign="right"
+                      >
                         <Text
                           size="xs"
                           color="coolGrey"
