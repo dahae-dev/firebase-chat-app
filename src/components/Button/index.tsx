@@ -26,6 +26,7 @@ const Root = styled.button<Pick<ButtonProps, 'backgroundColor' | 'color' | 'roun
       : 'initial'
   )};
   border-radius: ${({ rounded }) => rounded ? '50%' : '4px'};
+  box-shadow: none;
 `;
 
 const Button = ({

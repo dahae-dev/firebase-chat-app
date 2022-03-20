@@ -36,6 +36,7 @@ type ColorsType = Record<
 'transparent'
 | 'black'
 | 'black10'
+| 'black70'
 | 'white'
 | 'charcoalGrey'
 | 'charcoalGreyTwo'
@@ -115,6 +116,7 @@ const theme: DefaultTheme = {
     transparent: 'transparent',
     black: '#000000',
     black10: transparentize(0.9, '#000000'),
+    black70: transparentize(0.3, '#000000'),
     white: '#ffffff',
     charcoalGrey: '#464052',
     charcoalGreyTwo: '#363A42',

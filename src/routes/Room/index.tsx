@@ -1,5 +1,6 @@
 import { format, isSameMinute } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
+import { getDownloadURL, UploadTask } from 'firebase/storage';
 import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -11,12 +12,15 @@ import Divider from 'components/Divider';
 import Icon from 'components/Icon';
 import Link from 'components/Link';
 import Page from 'components/Page';
+import ProgressBar from 'components/ProgressBar';
 import Spinner from 'components/Spinner';
 import Stack from 'components/Stack';
 import Text from 'components/Text';
 import TextField from 'components/TextField';
 import Thumbnail from 'components/Thumbnail';
 import Topbar from 'components/Topbar';
+import UploadInput from 'components/UploadInput';
+import useUpload from 'hooks/useUpload';
 import { IMessage } from 'types';
 
 import { useRoomMutation } from './mutations';
@@ -72,13 +76,37 @@ const Footer = styled(Page.Footer)`
 
 const Form = styled.form``;
 
-const StyledButton = styled(Button)`
+const SubmitButton = styled(Button)`
   display: flex;
+  -webkit-justify-content: center;
   justify-content: center;
+  -webkit-align-items: center;
   align-items: center;
   min-width: ${({ theme }) => theme.heights.inputField};
   min-height: ${({ theme }) => theme.heights.inputField};
   border: none;
+`;
+
+const ThumbnailWrapper = styled.div`
+  width: 50%;
+`;
+
+const XButton = styled(Button)`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  border: none;
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme.colors.black70};
+  width: 45px;
+  height: 45px;
+  display: flex;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-align-items: center;
+  align-items: center;
 `;
 
 const ScrollRefContainer = styled.div``;
@@ -134,15 +162,61 @@ const Room = () => {
   const [formValue, setFormValue] = useState('');
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    saveMessage({
-      type: 'text',
-      content: formValue,
-      createdAt: Timestamp.fromDate(new Date()),
-      status: 'sent',
-    });
-    setFormValue('');
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (formValue) {
+      saveMessage({
+        type: 'text',
+        content: formValue,
+        createdAt: Timestamp.fromDate(new Date()),
+        status: 'sent',
+      });
+      setFormValue('');
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadTask, setUploadTask] = useState<UploadTask | null>(null);
+  const [progressRate, setProgressRate] = useState(0);
+  const { uploadFile } = useUpload();
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { currentTarget: { validity, files } } = e;
+    if (validity.valid && files && files[0]) {
+      setSelectedFile(files[0]);
+      setUploadTask(uploadFile(files[0]));
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  const cancelUpload = () => {
+    setSelectedFile(null);
+    if (uploadTask) {
+      uploadTask.cancel();
+    }
+  };
+  useEffect(() => {
+    if (uploadTask) {
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes);
+          setProgressRate(progress);
+        },
+        (error) => {
+          console.log(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
+            saveMessage({
+              type: 'file',
+              content: downloadUrl,
+              createdAt: Timestamp.fromDate(new Date()),
+              status: 'sent',
+            });
+            setSelectedFile(null);
+            scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+          });
+        },
+      );
+    }
+  }, [uploadTask]);
 
   return (
     <Page
@@ -161,7 +235,16 @@ const Room = () => {
         </Topbar.Section>
         <Topbar.Section size={1 / 4} align="right">
           <Stack spacing={1.5}>
-            <Icon.Image size={20} />
+            <UploadInput
+              accept='image/*'
+              renderButton={({ onClick }) => (
+                <Icon.Image
+                  size={20}
+                  onClick={onClick}
+                />
+              )}
+              onChange={handleFileChange}
+            />
             <Icon.Search size={20} />
           </Stack>
         </Topbar.Section>
@@ -209,9 +292,12 @@ const Room = () => {
                               </MessageBox>
                             )
                             : (
-                              <Thumbnail
-                                src={msg.content}
-                              />
+                              <ThumbnailWrapper>
+                                <Thumbnail
+                                  src={msg.content}
+                                  size="100%"
+                                />
+                              </ThumbnailWrapper>
                             )
                         }
                         <Text
@@ -227,6 +313,26 @@ const Room = () => {
               ))
             )
         }
+        {
+          selectedFile && (
+            <MessageWrapper reverse>
+              <ThumbnailWrapper>
+                <Thumbnail
+                  src={URL.createObjectURL(selectedFile)}
+                  name={selectedFile.name}
+                  size="100%"
+                >
+                  <XButton
+                    onClick={cancelUpload}
+                  >
+                    <Icon.X size={20} />
+                  </XButton>
+                </Thumbnail>
+                <ProgressBar value={progressRate} />
+              </ThumbnailWrapper>
+            </MessageWrapper>
+          )
+        }
         <ScrollRefContainer
           ref={scrollRef}
         />
@@ -239,12 +345,12 @@ const Room = () => {
               onChange={(e) => setFormValue(e.target.value)}
               placeholder='메시지를 입력하세요..'
             />
-            <StyledButton
+            <SubmitButton
               type="submit"
               rounded
             >
               <Icon.Mail size={24} />
-            </StyledButton>
+            </SubmitButton>
           </Stack>
         </Form>
       </Footer>
@@ -253,3 +359,4 @@ const Room = () => {
 };
 
 export default Room;
+
