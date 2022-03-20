@@ -6,14 +6,12 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { p, py, px, mx, Padding } from 'styled-components-spacing';
 
-import Align from 'components/Align';
 import Button from 'components/Button';
 import Divider from 'components/Divider';
 import Icon from 'components/Icon';
 import Link from 'components/Link';
 import Page from 'components/Page';
 import ProgressBar from 'components/ProgressBar';
-import Spinner from 'components/Spinner';
 import Stack from 'components/Stack';
 import Text from 'components/Text';
 import TextField from 'components/TextField';
@@ -114,12 +112,8 @@ const ScrollRefContainer = styled.div``;
 const Room = () => {
   const params = useParams<{ room_id: string }>();
   const { room_id: roomId } = params;
-  const {
-    isLoading,
-    data,
-  } = useRoomQuery({ id: roomId });
-  const { unreadCount, participants = [], messages = [] } = data || {};
-  const title = participants.map(({ name }) => name).join(', ');
+  const { data } = useRoomQuery({ id: roomId });
+  const { displayName, unreadCount, messages = [] } = data || {};
   const processedMessages = messages.map((message, idx) => {
     const createdAt = message.createdAt?.toDate();
     const nextCreatedAt = messages[idx + 1]?.createdAt?.toDate();
@@ -236,7 +230,7 @@ const Room = () => {
         </Topbar.Section>
         <Topbar.Section size="max" align="center">
           <Text>
-            {title}
+            {displayName}
           </Text>
         </Topbar.Section>
         <Topbar.Section size={1 / 4} align="right">
@@ -257,68 +251,55 @@ const Room = () => {
       </Topbar>
       <Body footerOffset={footerOffset}>
         {
-          isLoading
-            ? (
-              <Align horizontal="center" vertical="center">
-                <Spinner
-                  loading={isLoading}
-                  size={60}
-                  css=""
-                  speedMultiplier={1}
-                />
-              </Align>
-            )
-            : (
-              dateGroups.map((dateGroup) => (
-                <React.Fragment key={dateGroup}>
-                  <Padding vertical={1}>
-                    <Divider>
-                      {dateGroup}
-                    </Divider>
-                  </Padding>
-                  {
-                    groupedMessages[dateGroup].map((msg) => (
-                      <MessageWrapper
-                        key={msg.id}
-                        reverse={msg.status === 'sent' ? true : false}
-                      >
-                        {
-                          msg.type === 'file'
-                            ? (
-                              <ThumbnailWrapper>
-                                <Thumbnail
-                                  src={msg.content}
-                                  size="100%"
-                                />
-                              </ThumbnailWrapper>
-                              
-                            )
-                            : (
-                              <MessageBox
-                                variation={msg.status === 'sent' ? 'purple' : 'white'}
+          dateGroups.map((dateGroup) => (
+            <React.Fragment key={dateGroup}>
+              <Padding vertical={1}>
+                <Divider>
+                  {dateGroup}
+                </Divider>
+              </Padding>
+              {
+                groupedMessages[dateGroup].map((msg) => (
+                  <MessageWrapper
+                    key={msg.id}
+                    reverse={msg.status === 'sent' ? true : false}
+                  >
+                    {
+                      msg.type === 'file'
+                        ? (
+                          <ThumbnailWrapper>
+                            <Thumbnail
+                              src={msg.content}
+                              size="100%"
+                            />
+                          </ThumbnailWrapper>
+                          
+                        )
+                        : (
+                          <MessageBox
+                            variation={msg.status === 'sent' ? 'purple' : 'white'}
+                          >
+                            <Padding all={1.5}>
+                              <Text
+                                size="s"
                               >
-                                <Padding all={1.5}>
-                                  <Text
-                                    size="s"
-                                  >
-                                    {msg.content}
-                                  </Text>
-                                </Padding>
-                              </MessageBox>
-                            )
-                        }
-                        <Text
-                          color="coolGrey"
-                          size="xs"
-                        >
-                          {msg.createdAt}
-                        </Text>
-                      </MessageWrapper>
-                    ))
-                  }
-                </React.Fragment>
-              ))
-            )
+                                {msg.content}
+                              </Text>
+                            </Padding>
+                          </MessageBox>
+                        )
+                    }
+                    <Text
+                      color="coolGrey"
+                      size="xs"
+                    >
+                      {msg.createdAt}
+                    </Text>
+                  </MessageWrapper>
+                ))
+              }
+            </React.Fragment>
+          ))
         }
         {
           selectedFile && (

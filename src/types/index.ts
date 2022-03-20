@@ -16,7 +16,8 @@ export interface IMessage {
 
 export interface IRoom {
   id?: string;
+  displayName?: string;
+  thumbnailUrl?: string;
   unreadCount?: number;
-  participants?: IUser[];
   messages?: IMessage[];
 }

@@ -54,16 +54,11 @@ const RoomList = () => {
   
   const rooms = sortedRooms.map(({
     id,
+    displayName,
+    thumbnailUrl,
     unreadCount = 0,
-    participants = [],
     messages = [],
   }) => {
-    const thumbnail = (
-      participants.length === 1
-        ? participants[0].thumbnail
-        : ''
-    );
-    const title = participants.map(({ name }) => name).join(', ');
     const last = messages[messages.length - 1] || {};
     const lastMessage = (
       last.type === 'file'
@@ -81,8 +76,8 @@ const RoomList = () => {
     
     return {
       id,
-      thumbnail,
-      title,
+      displayName,
+      thumbnailUrl,
       lastMessage,
       lastCreatedAt,
       unreadCount,
@@ -128,8 +123,8 @@ const RoomList = () => {
                       <Partition.Side>
                         <Thumbnail
                           size="50px"
-                          src={room.thumbnail}
-                          name={room.thumbnail ? room.title : 'thumbnail'}
+                          src={room.thumbnailUrl}
+                          name={room.thumbnailUrl ? room.displayName : 'thumbnail'}
                           rounded
                         />
                       </Partition.Side>
@@ -140,7 +135,7 @@ const RoomList = () => {
                           color="charcoalGrey"
                           lineClamp
                         >
-                          {room.title}
+                          {room.displayName}
                         </Text>
                         <Margin top={0.75}>
                           <Text

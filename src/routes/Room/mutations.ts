@@ -1,9 +1,7 @@
-import {
-  useFirestoreDocumentMutation,
-} from '@react-query-firebase/firestore';
 import { 
   arrayUnion,
   doc,
+  updateDoc,
 } from 'firebase/firestore';
 
 import { firestore } from 'services/firebase';
@@ -13,25 +11,20 @@ export const useRoomMutation = (
   roomId: string,
 ) => {
   const ref = doc(firestore, 'rooms', roomId);
-  const mutation = useFirestoreDocumentMutation(ref, {
-    merge: true,
-  });
 
-  const saveMessage = (message: IMessage) => {
-    mutation.mutate({
+  const saveMessage = async (message: IMessage) => {
+    await updateDoc(ref, {
       messages: arrayUnion(message),
     });
-    return mutation;
   };
 
-  const checkMessage = () => {
-    mutation.mutate({
+  const checkMessage = async () => {
+    await updateDoc(ref, {
       unreadCount: 0,
     });
   };
 
   return {
-    mutation,
     saveMessage,
     checkMessage,
   };

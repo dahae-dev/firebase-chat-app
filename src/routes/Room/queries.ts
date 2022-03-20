@@ -1,17 +1,21 @@
-import { useFirestoreDocument } from '@react-query-firebase/firestore';
-import {  doc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
 import { firestore } from 'services/firebase';
 import { IRoom } from 'types';
 
 export const useRoomQuery = ({ id }: { id: string }) => {
+  const [room, setRoom] = useState<IRoom | null>(null);
   const ref = doc(firestore, 'rooms', id);
-  const room = useFirestoreDocument<IRoom>(['rooms', id], ref, {
-    subscribe: true,
-  });
-  const snapshot = room.data;
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(ref, (snapshot) => {
+      setRoom(snapshot.data() || null);
+    });
+    return unsubscribe;
+  }, []);
+
   return {
-    ...room,
-    data: snapshot ? snapshot.data() : {},
+    data: room,
   };
 };
