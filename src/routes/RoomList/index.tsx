@@ -130,7 +130,6 @@ const RoomList = () => {
                       </Partition.Side>
                       <Partition.Main>
                         <Text
-                          size="l"
                           weight="semiBold"
                           color="charcoalGrey"
                           lineClamp

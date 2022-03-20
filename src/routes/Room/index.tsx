@@ -32,7 +32,6 @@ interface IProcessedMessage extends Omit<IMessage, 'createdAt'> {
 // ====
 
 const Body = styled(Page.Body)<{ footerOffset?: number }>`
-  margin-bottom: ${({ footerOffset }) => `${footerOffset}px` || 0};
   ${p(1.5)}
 `;
 
@@ -107,7 +106,7 @@ const XButton = styled(Button)`
   align-items: center;
 `;
 
-const ScrollRefContainer = styled.div``;
+const ScrollRefContainer = styled.span``;
 
 const Room = () => {
   const params = useParams<{ room_id: string }>();
@@ -139,20 +138,13 @@ const Room = () => {
   }, {} as { [x: string]: IProcessedMessage[] });
   const dateGroups = Object.keys(groupedMessages);
 
-  const footerRef = useRef<HTMLDivElement>(null);
-  const [footerOffset, setFooterOffset] = useState(0);
+  const { checkMessage, saveMessage } = useRoomMutation(roomId);
   useEffect(() => {
-    if (footerRef.current) {
-      setFooterOffset(footerRef.current.clientHeight);
+    if (unreadCount && unreadCount > 0) {
+      checkMessage();
     }
-  }, [footerRef.current]);
+  }, [unreadCount]);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [scrollRef.current]);
-
-  const { saveMessage, checkMessage } = useRoomMutation(roomId);
   const [formValue, setFormValue] = useState('');
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -164,15 +156,16 @@ const Room = () => {
         status: 'sent',
       });
       setFormValue('');
-      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
+  const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (unreadCount && unreadCount > 0) {
-      checkMessage();
-    }
-  }, [unreadCount]);
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [
+    scrollRef.current,
+    JSON.stringify(messages),
+  ]);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadTask, setUploadTask] = useState<UploadTask | null>(null);
@@ -183,7 +176,6 @@ const Room = () => {
     if (validity.valid && files && files[0]) {
       setSelectedFile(files[0]);
       setUploadTask(uploadFile(files[0]));
-      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   };
   const cancelUpload = () => {
@@ -211,7 +203,6 @@ const Room = () => {
               status: 'sent',
             });
             setSelectedFile(null);
-            scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
           });
         },
       );
@@ -249,7 +240,7 @@ const Room = () => {
           </Stack>
         </Topbar.Section>
       </Topbar>
-      <Body footerOffset={footerOffset}>
+      <Body>
         {
           dateGroups.map((dateGroup) => (
             <React.Fragment key={dateGroup}>
@@ -325,7 +316,7 @@ const Room = () => {
           ref={scrollRef}
         />
       </Body>
-      <Footer ref={footerRef}>
+      <Footer>
         <Form onSubmit={handleSubmit}>
           <Stack>
             <TextField
@@ -347,4 +338,3 @@ const Room = () => {
 };
 
 export default Room;
-

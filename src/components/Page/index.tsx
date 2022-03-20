@@ -26,11 +26,11 @@ const Body = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: auto;
+  overflow-y: scroll;
 `;
 
 const Footer = styled.div`
-  position: fixed;
+  position: sticky;
   bottom: 0;
   left: 0;
   right: 0;
