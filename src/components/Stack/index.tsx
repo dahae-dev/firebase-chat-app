@@ -34,7 +34,6 @@ const Root = styled.div<Omit<StackProps, 'wrap'> & {
       ? 'flex-wrap: wrap;'
       : 'flex-wrap: nowrap;'
   )}
-  ${({ spacing }) => (spacing ? ml(-spacing) : '')}
   ${({ spacing, $wrap }) => ((spacing && $wrap) ? mt(-spacing) : '')}
   & > *:not(:first-child) {
     ${({ spacing }) => ml(spacing)}

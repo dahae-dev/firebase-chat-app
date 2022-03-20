@@ -1,10 +1,10 @@
 import { InputHTMLAttributes } from 'react';
 import styled from 'styled-components';
-import { p } from 'styled-components-spacing';
+import { px } from 'styled-components-spacing';
 
 type TextFieldProps = InputHTMLAttributes<HTMLInputElement>;
 
-const StyledInput = styled.input`
+const Input = styled.input`
   width: 100%;
   min-height: ${({ theme }) => theme.heights.inputField};
   border: none;
@@ -14,18 +14,19 @@ const StyledInput = styled.input`
   font-weight: ${({ theme }) => theme.fontWeights.medium};
   color: ${({ theme }) => theme.colors.charcoalGreyTwo};
   background-color: ${({ theme }) => theme.colors.white};
+  box-shadow: ${({ theme }) => theme.boxShadows[0]};
   &::placeholder {
     color: ${({ theme }) => theme.colors.coolGrey};
-  }: ${({ theme }) => theme.boxShadows[0]};
-  ${p(2)}
+  }
+  ${px(2)}
 `;
 
 const TextField = ({
   ...props
 }: TextFieldProps) => {
   return (
-    <StyledInput 
-      type="search"
+    <Input 
+      type="text"
       {...props} 
     />
   );
