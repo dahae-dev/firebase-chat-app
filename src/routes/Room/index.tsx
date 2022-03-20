@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, isSameMinute } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -23,7 +23,7 @@ import { useRoomMutation } from './mutations';
 import { useRoomQuery } from './queries';
 
 interface IProcessedMessage extends Omit<IMessage, 'createdAt'> {
-  createdAt: string;
+  createdAt: string | null;
   createdDate: string;
 }
 
@@ -92,11 +92,19 @@ const Room = () => {
   } = useRoomQuery({ id: roomId });
   const { participants = [], messages = [] } = data || {};
   const title = participants.map(({ name }) => name).join(', ');
-  const processedMessages = messages.map((message) => {
+  const processedMessages = messages.map((message, idx) => {
     const createdAt = message.createdAt?.toDate();
+    const nextCreatedAt = messages[idx + 1]?.createdAt?.toDate();
+    const isSentInSameMinute = (
+      createdAt && nextCreatedAt && isSameMinute(createdAt, nextCreatedAt)
+    );
     return {
       ...message,
-      createdAt: createdAt ? format(createdAt, 'HH:mm') : '',
+      createdAt: (
+        isSentInSameMinute
+          ? null
+          : (createdAt ? format(createdAt, 'HH:mm') : '')
+      ),
       createdDate: createdAt ? format(createdAt, 'yyyy년 M월 d일') : '',
     };
   });
